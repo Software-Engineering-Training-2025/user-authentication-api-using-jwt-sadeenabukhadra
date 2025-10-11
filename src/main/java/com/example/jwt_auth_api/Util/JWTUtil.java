@@ -5,6 +5,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -12,16 +13,25 @@ import java.util.Date;
 @Component
 public class JWTUtil {
 
-    @Value("${jwt.secret}")
-    private String secret;
+    private final String secret;
+    private final long accessExpiration;
+    private final long refreshExpiration;
 
-    @Value("${jwt.accessExpiration}")
-    private long accessExpiration;
-
-    @Value("${jwt.refreshExpiration}")
-    private long refreshExpiration;
+    // Constructor injection eliminates IntelliJ warnings
+    public JWTUtil(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.accessExpiration}") long accessExpiration,
+            @Value("${app.jwt.refreshExpiration}") long refreshExpiration
+    ) {
+        this.secret = secret;
+        this.accessExpiration = accessExpiration;
+        this.refreshExpiration = refreshExpiration;
+    }
 
     private SecretKey getSigningKey() {
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException("JWT secret is missing or too short (min 32 chars). Set app.jwt.secret in application.properties");
+        }
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -66,6 +76,7 @@ public class JWTUtil {
         }
     }
 
+    // Optional: keep these if you plan to use them later
     public long getRefreshExpiryMillis() {
         return refreshExpiration;
     }

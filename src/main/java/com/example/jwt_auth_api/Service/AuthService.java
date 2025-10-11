@@ -77,6 +77,22 @@ public class AuthService {
         refreshTokenRepository.deleteByToken(refreshToken);
     }
 
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
+
+    public RefreshTokenRepository getRefreshTokenRepository() {
+        return refreshTokenRepository;
+    }
+
+    public PasswordEncoder getPasswordEncoder() {
+        return passwordEncoder;
+    }
+
+    public JWTUtil getJwtUtil() {
+        return jwtUtil;
+    }
+
     public String refreshAccessToken(String refreshToken) {
         if(refreshToken == null) throw new CustomException("refreshToken required", 400);
 
@@ -89,5 +105,7 @@ public class AuthService {
         }
 
         return jwtUtil.generateAccessToken(entity.getUser());
+
     }
+
 }
